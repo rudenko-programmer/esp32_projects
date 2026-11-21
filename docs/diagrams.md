@@ -4,8 +4,8 @@
 
 | Инструмент | Что рисует | Пример |
 |---|---|---|
-| [schemdraw](https://schemdraw.readthedocs.io/) | принципиальные схемы (светодиоды, резисторы, транзисторы, микросхемы) и рисунки деталей: вид корпуса с номерами выводов | `E20362-front.svg`, `E20362-internal.svg` |
-| [WireViz](https://github.com/wireviz/WireViz) | схемы подключения: пин → провод → пин, с цветами проводов и подписями пинов на плате | `wiring.svg` |
+| [schemdraw](https://schemdraw.readthedocs.io/) | **монтажные схемы** (плата и детали как на столе, выводы на своих местах, цветные провода), принципиальные схемы (светодиоды, резисторы, транзисторы, микросхемы) и рисунки деталей: вид корпуса с номерами выводов | `layout.svg`, `connection.svg`, `E20362-front.svg`, `E20362-internal.svg` |
+| [WireViz](https://github.com/wireviz/WireViz) | схемы проводки: пин → провод → пин, с цветами проводов. `W1`, `W2`… на ней — группы проводов, не детали. В документах — ниже основной схемы, «для сравнения» | `wiring.svg` |
 
 Пример — [projects/led_clock/docs/diagrams/schematics.ipynb](../projects/led_clock/docs/diagrams/schematics.ipynb).
 
