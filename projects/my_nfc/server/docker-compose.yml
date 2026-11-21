@@ -1,0 +1,21 @@
+# Явное имя проекта: без него compose берёт имя папки ("server"),
+# и в монорепе серверы разных проектов столкнулись бы.
+name: my_nfc
+
+services:
+  nfc-webhook:
+    build: .
+    container_name: nfc-webhook
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    ports:
+      - "${HOST_PORT:-8090}:8000"
+    volumes:
+      - nfc_data:/data
+
+volumes:
+  nfc_data:
+    # Историческое имя тома (проект раньше назывался "server") — в нём уже лежит история сканов.
+    name: server_nfc_data

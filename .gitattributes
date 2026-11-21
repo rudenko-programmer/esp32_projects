@@ -1,0 +1,16 @@
+# В репозитории — LF, при checkout git сам приводит концы строк для ОС.
+* text=auto
+
+# Файлы, которые выполняются внутри Linux-контейнеров, — всегда LF
+*.sh        text eol=lf
+Dockerfile  text eol=lf
+*.py        text eol=lf
+
+# PowerShell-скрипты — CRLF (так их ожидают старые редакторы и Windows PowerShell 5)
+*.ps1       text eol=crlf
+
+# Бинарные
+*.png  binary
+*.jpg  binary
+*.pdf  binary
+*.bin  binary

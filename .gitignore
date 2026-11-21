@@ -1,0 +1,39 @@
+# =====================================================================
+#  Общий .gitignore монорепы. Правила действуют для всех проектов.
+#  Специфичное для одного проекта — в projects/<имя>/.gitignore.
+# =====================================================================
+
+# ---- Секреты (никогда не коммитим) ----
+# Прошивка: config.h создаётся из config.example.h
+projects/*/firmware/**/config.h
+secrets.h
+# Серверы: .env создаётся из .env.example
+.env
+.env.*
+!.env.example
+
+# ---- Сборка Arduino / PlatformIO ----
+build/
+.pio/
+*.bin
+*.elf
+*.map
+
+# ---- Python ----
+__pycache__/
+*.pyc
+.venv/
+
+# ---- Данные ----
+*.db
+*.sqlite
+*.sqlite3
+
+# ---- IDE / OS ----
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# ---- Claude Code: локальные настройки (общие .claude/agents и settings.json коммитим) ----
+.claude/settings.local.json

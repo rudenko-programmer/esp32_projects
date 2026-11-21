@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NFC монитор</title>
+<style>
+  :root {
+    --bg: #0e1015; --panel: #161a22; --panel-2: #1d222c; --border: #2a303c;
+    --text: #e9ecf2; --muted: #8b93a5; --accent: #5b8cff;
+    --ok: #2fcf7a; --warn: #f4a62a; --err: #ff5c5c;
+    --flash: var(--accent);
+  }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f4f6fa; --panel: #ffffff; --panel-2: #eef1f6; --border: #dde2ea;
+      --text: #161a22; --muted: #687085; --accent: #3a6df0;
+      --ok: #18a95c; --warn: #d98a0b; --err: #e04040;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--bg); color: var(--text); min-height: 100vh;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .mono { font-family: ui-monospace, "SF Mono", Consolas, monospace; }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 20px 16px 48px; }
+
+  header { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+  h1 { font-size: 20px; font-weight: 650; margin: 0; letter-spacing: .2px; }
+  h2 { font-size: 13px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .6px; margin: 0 0 10px; }
+  .toolbar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+  .status { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted);
+            padding: 6px 12px; border: 1px solid var(--border); border-radius: 999px; background: var(--panel); }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--err); }
+  .status.live .dot { background: var(--ok); animation: ping 2s infinite; }
+  @keyframes ping {
+    0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--ok) 60%, transparent); }
+    100% { box-shadow: 0 0 0 8px transparent; }
+  }
+
+  button {
+    font: inherit; font-size: 13px; color: var(--text); background: var(--panel); cursor: pointer;
+    border: 1px solid var(--border); border-radius: 8px; padding: 6px 12px;
+  }
+  button:hover { border-color: var(--accent); }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+  .stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 16px; }
+  .stat { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 12px 16px; }
+  .stat b { display: block; font-size: 24px; font-weight: 650; font-variant-numeric: tabular-nums; }
+  .stat span { font-size: 12px; color: var(--muted); }
+
+  .hero {
+    background: var(--panel); border: 2px solid var(--border); border-radius: 18px;
+    padding: 36px 20px 30px; text-align: center; margin-bottom: 24px; min-height: 230px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+  }
+  .hero.known   { --flash: var(--ok); }
+  .hero.unknown { --flash: var(--warn); }
+  .hero.flash { animation: flash 1.8s ease-out; }
+  @keyframes flash {
+    0%   { border-color: var(--flash); box-shadow: 0 0 0 10px color-mix(in srgb, var(--flash) 22%, transparent); }
+    100% { border-color: var(--border); box-shadow: 0 0 0 0 transparent; }
+  }
+  .hero-label { font-size: 13px; text-transform: uppercase; letter-spacing: .8px; color: var(--muted); }
+  .hero.known .hero-label { color: var(--ok); }
+  .hero.unknown .hero-label { color: var(--warn); }
+  .hero-name { font-size: clamp(28px, 6vw, 56px); font-weight: 700; line-height: 1.1; overflow-wrap: anywhere; }
+  .hero-uid { font-size: clamp(18px, 3.5vw, 30px); letter-spacing: 2px; color: var(--muted); overflow-wrap: anywhere; }
+  .hero-meta { font-size: 14px; color: var(--muted); }
+  .hero.waiting .hero-name { font-size: clamp(20px, 4vw, 32px); font-weight: 500; color: var(--muted); }
+  .hero.waiting .hero-uid { animation: breathe 2.4s ease-in-out infinite; }
+  @keyframes breathe { 50% { opacity: .35; } }
+
+  .feed { list-style: none; margin: 0; padding: 0; background: var(--panel); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  .feed li {
+    display: grid; grid-template-columns: 90px minmax(0, 1fr) minmax(0, 160px) 90px; gap: 12px; align-items: center;
+    padding: 10px 16px; border-bottom: 1px solid var(--border); cursor: pointer;
+  }
+  .feed li:last-child { border-bottom: 0; }
+  .feed li:hover { background: var(--panel-2); }
+  .feed li.new { animation: slide-in .5s ease-out, highlight 2.5s ease-out; }
+  @keyframes slide-in { from { opacity: 0; transform: translateY(-8px); } }
+  @keyframes highlight { from { background: color-mix(in srgb, var(--accent) 18%, transparent); } }
+  .feed .t { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .feed .who { display: flex; flex-direction: column; min-width: 0; }
+  .feed .nm { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .feed .nm.unknown { color: var(--muted); font-weight: 500; }
+  .feed .uid { font-size: 12px; color: var(--muted); }
+  .feed .dev { font-size: 13px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .badge { justify-self: end; font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 999px; white-space: nowrap; }
+  .badge.ok   { color: var(--ok);   background: color-mix(in srgb, var(--ok) 14%, transparent); }
+  .badge.warn { color: var(--warn); background: color-mix(in srgb, var(--warn) 14%, transparent); }
+  .empty { padding: 28px 16px; text-align: center; color: var(--muted); cursor: default !important; display: block !important; }
+
+  footer { margin-top: 20px; font-size: 12px; color: var(--muted); text-align: center; }
+  footer a { color: var(--muted); }
+
+  .toast {
+    position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%) translateY(20px); opacity: 0;
+    background: var(--panel-2); border: 1px solid var(--border); border-radius: 10px; padding: 10px 16px;
+    font-size: 14px; transition: .25s; pointer-events: none; max-width: calc(100% - 32px);
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  @media (max-width: 640px) {
+    .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .feed li { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "who badge" "t dev"; row-gap: 4px; }
+    .feed .who { grid-area: who; } .feed .badge { grid-area: badge; }
+    .feed .t { grid-area: t; } .feed .dev { grid-area: dev; text-align: right; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>NFC монитор</h1>
+    <div class="toolbar">
+      <button id="soundBtn" type="button" title="Звук при скане">🔇 Звук выкл</button>
+      <span class="status" id="status"><span class="dot"></span><span id="statusText">Подключение…</span></span>
+    </div>
+  </header>
+
+  <div class="stats">
+    <div class="stat"><b id="stScans">–</b><span>сканов всего</span></div>
+    <div class="stat"><b id="stUids">–</b><span>разных карт</span></div>
+    <div class="stat"><b id="stNamed">–</b><span>с именем</span></div>
+    <div class="stat"><b id="stDevices">–</b><span>устройств</span></div>
+  </div>
+
+  <section class="hero waiting" id="hero" aria-live="polite">
+    <div class="hero-label" id="heroLabel">Ожидание</div>
+    <div class="hero-name" id="heroName">Поднесите карту к считывателю</div>
+    <div class="hero-uid mono" id="heroUid">• • • •</div>
+    <div class="hero-meta" id="heroMeta"></div>
+    <button class="primary" id="heroNameBtn" type="button" hidden>Назвать карту</button>
+  </section>
+
+  <h2>Последние сканы</h2>
+  <ul class="feed" id="feed"><li class="empty">Сканов пока нет</li></ul>
+
+  <footer>Клик по строке — задать имя карте · <a href="/docs">API</a></footer>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(() => {
+  const MAX_FEED = 100;
+  const $ = (id) => document.getElementById(id);
+  const store = {
+    get(k) { try { return localStorage.getItem(k); } catch { return null; } },
+    set(k, v) { try { localStorage.setItem(k, v); } catch {} },
+  };
+
+  const names = new Map();   // uid -> имя
+  const seen = new Set();    // id уже показанных сканов
+  let heroUid = null;
+  let apiKey = store.get('nfc.apiKey') || '';
+  let soundOn = store.get('nfc.sound') === '1';
+  let audioCtx = null;
+
+  // ---------- утилиты ----------
+  function el(tag, cls, text) {
+    const n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text !== undefined) n.textContent = text;
+    return n;
+  }
+  function fmtTime(iso) {
+    const d = new Date(iso);
+    return d.toDateString() === new Date().toDateString()
+      ? d.toLocaleTimeString()
+      : d.toLocaleString([], { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+  }
+  let toastTimer;
+  function toast(msg) {
+    const t = $('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+  // ---------- звук ----------
+  function renderSoundBtn() { $('soundBtn').textContent = soundOn ? '🔔 Звук вкл' : '🔇 Звук выкл'; }
+  $('soundBtn').addEventListener('click', () => {
+    soundOn = !soundOn;
+    store.set('nfc.sound', soundOn ? '1' : '0');
+    renderSoundBtn();
+    if (soundOn) beep(true);
+  });
+  function beep(known) {
+    if (!soundOn) return;
+    try {
+      audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+      audioCtx.resume();
+      const now = audioCtx.currentTime;
+      const tones = known ? [880, 1320] : [520];
+      tones.forEach((f, i) => {
+        const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+        const t0 = now + i * 0.12;
+        o.type = 'sine'; o.frequency.value = f;
+        g.gain.setValueAtTime(0.0001, t0);
+        g.gain.exponentialRampToValueAtTime(0.25, t0 + 0.01);
+        g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.18);
+        o.connect(g).connect(audioCtx.destination);
+        o.start(t0); o.stop(t0 + 0.2);
+      });
+    } catch {}
+  }
+
+  // ---------- отрисовка ----------
+  function renderItem(scan, isNew) {
+    const li = el('li', isNew ? 'new' : '');
+    li.dataset.uid = scan.uid;
+    li.title = 'Нажмите, чтобы задать имя карте';
+    const who = el('span', 'who');
+    const type = scan.payload && scan.payload.card_type;
+    who.append(el('span', 'nm'), el('span', 'uid mono', type ? `${scan.uid} · ${type}` : scan.uid));
+    li.append(el('span', 't', fmtTime(scan.received_at)), who, el('span', 'dev', scan.device_id), el('span', 'badge'));
+    paintName(li, names.get(scan.uid) || null);
+    return li;
+  }
+  function paintName(li, name) {
+    const nm = li.querySelector('.nm'), badge = li.querySelector('.badge');
+    nm.textContent = name || 'Неизвестная карта';
+    nm.classList.toggle('unknown', !name);
+    badge.textContent = name ? 'известна' : 'новая';
+    badge.className = 'badge ' + (name ? 'ok' : 'warn');
+  }
+
+  function showHero(scan, flash) {
+    const hero = $('hero');
+    const name = names.get(scan.uid) || null;
+    heroUid = scan.uid;
+    hero.classList.remove('waiting');
+    hero.classList.toggle('known', !!name);
+    hero.classList.toggle('unknown', !name);
+    $('heroLabel').textContent = name ? 'Карта распознана' : 'Неизвестная карта';
+    $('heroName').textContent = name || 'Без имени';
+    $('heroUid').textContent = scan.uid.match(/.{1,2}/g).join(' ');
+    const rssi = scan.payload && scan.payload.rssi != null ? ` · Wi-Fi ${scan.payload.rssi} dBm` : '';
+    const type = scan.payload && scan.payload.card_type ? `${scan.payload.card_type} · ` : '';
+    $('heroMeta').textContent = `${type}${scan.device_id} · ${fmtTime(scan.received_at)}${rssi}`;
+    $('heroNameBtn').hidden = !!name;
+    if (flash) {
+      hero.classList.remove('flash');
+      void hero.offsetWidth; // перезапуск анимации
+      hero.classList.add('flash');
+    }
+  }
+
+  function applyCardName(uid, name) {
+    if (name) names.set(uid, name); else names.delete(uid);
+    document.querySelectorAll(`#feed li[data-uid="${uid}"]`).forEach((li) => paintName(li, name));
+    if (heroUid === uid) {
+      const hero = $('hero');
+      hero.classList.toggle('known', !!name);
+      hero.classList.toggle('unknown', !name);
+      $('heroLabel').textContent = name ? 'Карта распознана' : 'Неизвестная карта';
+      $('heroName').textContent = name || 'Без имени';
+      $('heroNameBtn').hidden = !!name;
+    }
+    loadStats();
+  }
+
+  // ---------- данные ----------
+  async function loadStats() {
+    try {
+      const s = await (await fetch('/api/stats')).json();
+      $('stScans').textContent = s.scans;
+      $('stUids').textContent = s.unique_uids;
+      $('stNamed').textContent = s.named_cards;
+      $('stDevices').textContent = s.devices;
+    } catch {}
+  }
+
+  async function loadInitial() {
+    try {
+      const scans = await (await fetch('/api/scans?limit=50')).json();
+      seen.clear();
+      scans.forEach((s) => { seen.add(s.id); if (s.name) names.set(s.uid, s.name); });
+      const feed = $('feed');
+      if (scans.length) {
+        feed.replaceChildren(...scans.map((s) => renderItem(s, false)));
+        showHero(scans[0], false);
+      }
+      loadStats();
+    } catch {
+      toast('Не удалось загрузить историю сканов');
+    }
+  }
+
+  function onScan(scan) {
+    if (seen.has(scan.id)) return;
+    seen.add(scan.id);
+    if (scan.name) names.set(scan.uid, scan.name); else names.delete(scan.uid);
+    const feed = $('feed');
+    feed.querySelector('.empty')?.remove();
+    feed.prepend(renderItem(scan, true));
+    while (feed.children.length > MAX_FEED) feed.lastElementChild.remove();
+    showHero(scan, true);
+    beep(!!scan.name);
+    loadStats();
+  }
+
+  // ---------- имена карт ----------
+  async function nameCard(uid) {
+    const name = prompt(`Имя для карты ${uid}:`, names.get(uid) || '');
+    if (name === null || !name.trim()) return;
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const headers = { 'Content-Type': 'application/json' };
+      if (apiKey) headers['X-API-Key'] = apiKey;
+      const r = await fetch(`/api/cards/${uid}`, { method: 'PUT', headers, body: JSON.stringify({ name: name.trim() }) });
+      if (r.status === 401 && attempt === 0) {
+        const k = prompt('Нужен API-ключ (API_KEY из server/.env):', apiKey);
+        if (k === null) return;
+        apiKey = k.trim();
+        store.set('nfc.apiKey', apiKey);
+        continue;
+      }
+      if (!r.ok) { toast(r.status === 401 ? 'Неверный API-ключ' : `Ошибка ${r.status}`); return; }
+      applyCardName(uid, name.trim());
+      toast('Имя сохранено');
+      return;
+    }
+  }
+  $('heroNameBtn').addEventListener('click', () => heroUid && nameCard(heroUid));
+  $('feed').addEventListener('click', (e) => {
+    const li = e.target.closest('li[data-uid]');
+    if (li) nameCard(li.dataset.uid);
+  });
+
+  // ---------- live ----------
+  function setStatus(live) {
+    $('status').classList.toggle('live', live);
+    $('statusText').textContent = live ? 'Live' : 'Переподключение…';
+  }
+  function connect() {
+    const es = new EventSource('/api/events');
+    es.addEventListener('open', () => { setStatus(true); loadInitial(); });
+    es.addEventListener('error', () => setStatus(false));
+    es.addEventListener('scan', (e) => onScan(JSON.parse(e.data)));
+    es.addEventListener('card', (e) => { const c = JSON.parse(e.data); applyCardName(c.uid, c.name); });
+  }
+
+  renderSoundBtn();
+  connect();
+})();
+</script>
+</body>
+</html>
