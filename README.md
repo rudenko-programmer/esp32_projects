@@ -7,20 +7,24 @@
 | Проект | Описание | Железо | Сервер |
 |---|---|---|---|
 | [my_nfc](projects/my_nfc/) | NFC-считыватель: UID карт → HTTP-вебхук, живой веб-монитор | ESP32 DevKit V1 + PN532 (I2C) | FastAPI + SQLite, порт 8090 |
+| [led_clock](projects/led_clock/) | Часы на семисегментных индикаторах с платы обогревателя (этап 1: 2 цифры) | ESP32 DevKit V1 + TOYO E20362-I (общий анод) | — |
 
 ## Структура
 
 ```
 esp32_projects/
 ├── projects/            # проекты (каждый самодостаточен)
-│   └── my_nfc/
+│   ├── my_nfc/
+│   └── led_clock/
 ├── docs/                # общая документация
 │   ├── conventions.md         # архитектура проекта и правила
+│   ├── diagrams.md            # схемы кодом (Jupyter + schemdraw + WireViz в Docker)
 │   ├── esp32-arduino-setup.md # подготовка ПК (один раз)
 │   └── new-project.md         # как создать новый проект
 ├── shared/              # общий код для нескольких проектов
 ├── templates/project/   # шаблон нового проекта
-├── tools/               # скрипты монорепы
+├── templates/component.md  # образец описания компонента
+├── tools/               # скрипты монорепы (new-project.ps1, diagrams.ps1)
 ├── .claude/agents/      # агенты Claude Code
 └── CLAUDE.md            # правила для Claude Code
 ```
