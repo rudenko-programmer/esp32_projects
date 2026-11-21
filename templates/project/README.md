@@ -11,6 +11,8 @@
 ```
 projects/__PROJECT__/
 ├── docs/
+│   ├── components/               # описания деталей и даташиты
+│   ├── diagrams/                 # schematics.ipynb -> SVG-схемы для документов
 │   ├── 01-environment-setup.md   # общая установка ESP32 + библиотеки проекта
 │   ├── 02-firmware.md            # конфиг, заливка, лог
 │   ├── 03-hardware.md            # схема подключения

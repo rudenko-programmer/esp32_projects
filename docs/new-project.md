@@ -26,7 +26,9 @@
 
 - Библиотеки — в `docs/01-environment-setup.md`.
 - Параметры — в `config.example.h` (и `#ifndef`-умолчание в скетче).
-- Схема подключения — в `docs/03-hardware.md`.
+- Каждая подключаемая деталь — описание в `docs/components/<маркировка>.md` по образцу [templates/component.md](../templates/component.md), даташит — в `docs/components/datasheets/`, строка — в `docs/components/README.md`. Правила: [conventions.md](conventions.md#компоненты).
+- Схема подключения — в `docs/03-hardware.md` (со ссылками на описания компонентов).
+- Картинки схем (распиновки, подключение) — в `docs/diagrams/schematics.ipynb`, пересборка `./tools/diagrams.ps1 render`. Как это устроено: [diagrams.md](diagrams.md).
 - Дополнительные шаги (сервер, тестирование) — новые документы `NN-тема.md` по порядку сборки; обновить таблицу «Порядок сборки» в README проекта.
 - Специфику проекта для Claude можно описать в `projects/<project>/CLAUDE.md`.
 

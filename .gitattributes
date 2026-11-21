@@ -6,6 +6,10 @@
 Dockerfile  text eol=lf
 *.py        text eol=lf
 
+# Схемы: SVG генерируются в контейнере, ноутбуки выполняются там же — LF, чтобы не было лишних diff
+*.svg       text eol=lf
+*.ipynb     text eol=lf
+
 # PowerShell-скрипты — CRLF (так их ожидают старые редакторы и Windows PowerShell 5)
 *.ps1       text eol=crlf
 

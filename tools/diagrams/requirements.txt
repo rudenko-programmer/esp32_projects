@@ -1,0 +1,5 @@
+schemdraw==0.23
+wireviz==0.4.1
+jupyterlab==4.6.6
+nbconvert==7.17.2
+ipykernel==7.4.0
