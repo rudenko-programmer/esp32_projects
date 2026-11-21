@@ -24,6 +24,7 @@
 
 ## 3. Наполнить
 
+- Путеводитель — `docs/00-guide.md`: заполнить TODO (цель, детали, проверка перед включением, что должно произойти при запуске).
 - Библиотеки — в `docs/01-environment-setup.md`.
 - Параметры — в `config.example.h` (и `#ifndef`-умолчание в скетче).
 - Каждая подключаемая деталь — описание в `docs/components/<маркировка>.md` по образцу [templates/component.md](../templates/component.md), даташит — в `docs/components/datasheets/`, строка — в `docs/components/README.md`. Правила: [conventions.md](conventions.md#компоненты).
