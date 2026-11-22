@@ -8,6 +8,7 @@
 |---|---|---|---|
 | [my_nfc](projects/my_nfc/) | NFC-считыватель: UID карт → HTTP-вебхук, живой веб-монитор | ESP32 DevKit V1 + PN532 (I2C) | FastAPI + SQLite, порт 8090 |
 | [led_clock](projects/led_clock/) | Часы на семисегментных индикаторах с платы обогревателя (этап 1: 2 цифры), разводка v1 | ESP32 DevKit V1 + TOYO E20362-I (общий анод) | — |
+| [led_thermometer](projects/led_thermometer/) | Термометр: NTC-капля с платы обогревателя + индикатор E20362 (разводка v2) | ESP32 DevKit V1 + TOYO E20362-I + NTC 10 кОм | — |
 | [led_clock_v2](projects/led_clock_v2/) | То же, разводка v2 без пересечений проводов: верхний ряд ножек индикатора — верхний ряд платы, нижний — нижний | ESP32 DevKit V1 + TOYO E20362-I (общий анод) | — |
 
 ## Структура
