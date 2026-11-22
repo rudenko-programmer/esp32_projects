@@ -7,7 +7,8 @@
 | Проект | Описание | Железо | Сервер |
 |---|---|---|---|
 | [my_nfc](projects/my_nfc/) | NFC-считыватель: UID карт → HTTP-вебхук, живой веб-монитор | ESP32 DevKit V1 + PN532 (I2C) | FastAPI + SQLite, порт 8090 |
-| [led_clock](projects/led_clock/) | Часы на семисегментных индикаторах с платы обогревателя (этап 1: 2 цифры) | ESP32 DevKit V1 + TOYO E20362-I (общий анод) | — |
+| [led_clock](projects/led_clock/) | Часы на семисегментных индикаторах с платы обогревателя (этап 1: 2 цифры), разводка v1 | ESP32 DevKit V1 + TOYO E20362-I (общий анод) | — |
+| [led_clock_v2](projects/led_clock_v2/) | То же, разводка v2 без пересечений проводов: верхний ряд ножек индикатора — верхний ряд платы, нижний — нижний | ESP32 DevKit V1 + TOYO E20362-I (общий анод) | — |
 
 ## Структура
 
@@ -15,7 +16,8 @@
 esp32_projects/
 ├── projects/            # проекты (каждый самодостаточен)
 │   ├── my_nfc/
-│   └── led_clock/
+│   ├── led_clock/
+│   └── led_clock_v2/
 ├── docs/                # общая документация
 │   ├── conventions.md         # архитектура проекта и правила
 │   ├── diagrams.md            # схемы кодом (Jupyter + schemdraw + WireViz в Docker)
